@@ -1,5 +1,5 @@
 #include "spsparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 
 SpsParser::SpsParser(QObject *parent) :
     QObject(parent)
@@ -20,16 +20,17 @@ bool SpsParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     // Resolution:176x144
     cMatchTarget.setPattern("Resolution:([0-9]+)x([0-9]+)");
     while( !pcInputStream->atEnd() ) {
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-            int iWidth  = cMatchTarget.cap(1).toInt();
-            int iHeight = cMatchTarget.cap(2).toInt();
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() ) {
+            int iWidth  = match.captured(1).toInt();
+            int iHeight = match.captured(2).toInt();
             pcSequence->setWidth(iWidth);
             pcSequence->setHeight(iHeight);
             break;
@@ -43,8 +44,9 @@ bool SpsParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     while( !pcInputStream->atEnd() )
     {
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-            int iMaxCUSize = cMatchTarget.cap(1).toInt();
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() ) {
+            int iMaxCUSize = match.captured(1).toInt();
             pcSequence->setMaxCUSize(iMaxCUSize);
             break;
         }
@@ -55,8 +57,9 @@ bool SpsParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     while( !pcInputStream->atEnd() )
     {
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-            int iMaxCUDepth = cMatchTarget.cap(1).toInt();
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() ) {
+            int iMaxCUDepth = match.captured(1).toInt();
             pcSequence->setMaxCUDepth(iMaxCUDepth);
             break;
         }
@@ -67,8 +70,9 @@ bool SpsParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     while( !pcInputStream->atEnd() )
     {
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-            int iMinTUDepth = cMatchTarget.cap(1).toInt();
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() ) {
+            int iMinTUDepth = match.captured(1).toInt();
             pcSequence->setMaxInterTUDepth(iMinTUDepth);
             break;
         }
@@ -79,8 +83,9 @@ bool SpsParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     while( !pcInputStream->atEnd() )
     {
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-            int iMaxTUDepth = cMatchTarget.cap(1).toInt();
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() ) {
+            int iMaxTUDepth = match.captured(1).toInt();
             pcSequence->setMaxIntraTUDepth(iMaxTUDepth);
             break;
         }
@@ -91,8 +96,9 @@ bool SpsParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     while( !pcInputStream->atEnd() )
     {
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-            int iInputBitDepth = cMatchTarget.cap(1).toInt();
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch()) {
+            int iInputBitDepth = match.captured(1).toInt();
             pcSequence->setInputBitDepth(iInputBitDepth);
             break;
         }

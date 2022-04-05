@@ -1,5 +1,5 @@
 #include "tileparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 
 
 TileParser::TileParser(QObject *parent) :
@@ -13,7 +13,7 @@ bool TileParser::parseFile(QTextStream *pcInputStream, ComSequence *pcSequence)
     Q_ASSERT(pcSequence != NULL);
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
     ///<1,1> 0 4 4
     ///read one tile
@@ -29,20 +29,21 @@ bool TileParser::parseFile(QTextStream *pcInputStream, ComSequence *pcSequence)
     while(!pcInputStream->atEnd())
     {
         strOneLine = pcInputStream->readLine();
-        if(cMatchTarget.indexIn(strOneLine) != -1)
+        auto match = cMatchTarget.match(strOneLine);
+        if(match.hasMatch())
         {
             ///poc addr and iTileNum
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
 
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
 
-            int iTileNum = cMatchTarget.cap(2).toInt();
+            int iTileNum = match.captured(2).toInt();
             //pcFrame->m_iTileNum = iTileNum;
 
-            QString strTileInfo = cMatchTarget.cap(3);
-            cTileInfoStream.setString( &strTileInfo, QIODevice::ReadOnly);
+            QString strTileInfo = match.captured(3);
+            cTileInfoStream.setString( &strTileInfo, QIODeviceBase::ReadOnly);
 
             xReadTile(&cTileInfoStream, pcFrame);
         }

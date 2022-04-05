@@ -84,7 +84,7 @@ void TimeLineView::frameBarClicked(int iPoc)
 
 void TimeLineView::wheelEvent(QWheelEvent * event)
 {
-    if( event->delta() < 0 ) /// rotated towards user
+    if( event->angleDelta().y() < 0 ) /// rotated towards user
     {
         GitlIvkCmdEvt cEvt("next_frame");
         cEvt.dispatch();

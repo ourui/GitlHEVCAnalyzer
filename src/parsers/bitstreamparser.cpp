@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <QApplication>
+#include <QRegularExpression>
 
 BitstreamParser::BitstreamParser(QObject *parent):
     m_cDecoderProcess(this)
@@ -74,7 +75,7 @@ bool BitstreamParser::parseFile(QString strDecoderFolder,
     QString strDecoderCmd = QString("\"%1\" -b \"%2\" -o decoder_yuv.yuv").arg(strDecoderPath).arg(strBitstreamFilePath);
     qDebug() << strDecoderCmd;
 
-    m_cDecoderProcess.start(strDecoderCmd);
+    m_cDecoderProcess.startCommand(strDecoderCmd);
     /// wait for end/cancel
     m_cDecoderProcess.waitForFinished(-1);
 
@@ -98,13 +99,14 @@ void BitstreamParser::displayDecoderOutput()
 
 
         // display progress text as event
-        QRegExp cMatchTarget;
+        QRegularExpression cMatchTarget;
         cMatchTarget.setPattern("POC *(-?[0-9]+)");
+        auto    match = cMatchTarget.match(strLine);
 
-        if( cMatchTarget.indexIn(strLine) != -1 )
+        if( match.hasMatch())
         {
             GitlUpdateUIEvt evt;
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             QString strText = QString("POC %1 Decoded").arg(iPoc);
             evt.setParameter("decoding_progress", strText);
             dispatchEvt(evt);

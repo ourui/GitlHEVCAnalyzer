@@ -4,7 +4,7 @@
 #include <QDir>
 #include <QDebug>
 #include <iostream>
-#include <QTextCodec>
+//#include <QTextCodec>
 #include "gitlevent.h"
 #include "model/modellocator.h"
 #include "views/mainwindow.h"

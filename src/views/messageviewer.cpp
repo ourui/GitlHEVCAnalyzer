@@ -17,7 +17,9 @@ MessageViewer::MessageViewer(QWidget *parent) :
 
     m_cWarningBox.setWindowTitle("Warning");
     m_cWarningBox.setModal(false);
-    m_cDefalutTextColor = ui->msgTextBrowser->palette().foreground().color();
+
+    QPalette palette = ui->msgTextBrowser->palette();
+    m_cDefalutTextColor = palette.color(foregroundRole());
 
     listenToParams(QStringList()<<"msg_detail"<<"msg_level",
                    MAKE_CALLBACK(MessageViewer::onMessageArrived));

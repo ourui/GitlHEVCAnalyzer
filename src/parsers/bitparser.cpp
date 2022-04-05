@@ -1,5 +1,5 @@
 #include "bitparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 
 BitParser::BitParser(QObject *parent) :
     QObject(parent)
@@ -12,7 +12,7 @@ bool BitParser::parseLCUBitFile(QTextStream* pcInputStream, ComSequence* pcSeque
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     /// <0,0> 95
@@ -28,21 +28,22 @@ bool BitParser::parseLCUBitFile(QTextStream* pcInputStream, ComSequence* pcSeque
     {
 
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 )
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch())
         {
 
             /// poc and lcu addr
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
 
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
-            int iAddr = cMatchTarget.cap(2).toInt();
+            int iAddr = match.captured(2).toInt();
             pcLCU = pcFrame->getLCUs().at(iAddr);
 
 
             ///
-            QString strBitInfo = cMatchTarget.cap(3);
+            QString strBitInfo = match.captured(3);
             int iLCUBit = strBitInfo.toInt();
             pcLCU->setBitCount(iLCUBit);
             pcFrame->getBitCount() += iLCUBit;
@@ -60,7 +61,7 @@ bool BitParser::parseSCUBitFile(QTextStream* pcInputStream, ComSequence* pcSeque
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     /// <0,8> 8 36 31 36 30 36 31 36 0 36 2 36 1 36 0 36 1 36
@@ -75,21 +76,22 @@ bool BitParser::parseSCUBitFile(QTextStream* pcInputStream, ComSequence* pcSeque
     {
 
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 )
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch())
         {
             /// poc and lcu addr
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
 
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
-            int iAddr = cMatchTarget.cap(2).toInt();
+            int iAddr = match.captured(2).toInt();
             pcLCU = pcFrame->getLCUs().at(iAddr);
 
 
             ///
-            QString strSCUBitInfo = cMatchTarget.cap(3);
-            cSCUBitInfoStream.setString( &strSCUBitInfo, QIODevice::ReadOnly );
+            QString strSCUBitInfo = match.captured(3);
+            cSCUBitInfoStream.setString( &strSCUBitInfo, QIODeviceBase::ReadOnly );
             xParseSCUBitFile(&cSCUBitInfoStream, pcLCU);
 
         }

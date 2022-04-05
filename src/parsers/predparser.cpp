@@ -1,5 +1,5 @@
 #include "predparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 
 PredParser::PredParser(QObject *parent) :
@@ -12,7 +12,7 @@ bool PredParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     /// <1,1> 0 0 1 1 0
@@ -27,22 +27,23 @@ bool PredParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     {
 
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 )
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() )
         {
             /// poc and lcu addr
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
 
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
-            int iAddr = cMatchTarget.cap(2).toInt();
+            int iAddr = match.captured(2).toInt();
             pcLCU = pcFrame->getLCUs().at(iAddr);
 
 
             ///
-            QString strCUInfo = cMatchTarget.cap(3);
+            QString strCUInfo = match.captured(3);
 
-            cPredInfoStream.setString(&strCUInfo, QIODevice::ReadOnly );
+            cPredInfoStream.setString(&strCUInfo, QIODeviceBase::ReadOnly );
 
             xReadPredMode(&cPredInfoStream, pcLCU);
 

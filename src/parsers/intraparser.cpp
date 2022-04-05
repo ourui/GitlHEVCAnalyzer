@@ -1,5 +1,5 @@
 #include "intraparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 IntraParser::IntraParser(QObject *parent) :
     QObject(parent)
@@ -11,7 +11,7 @@ bool IntraParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     /// <0,8> 8 36 31 36 30 36 31 36 0 36 2 36 1 36 0 36 1 36
@@ -26,21 +26,22 @@ bool IntraParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     {
 
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 )
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() )
         {
             /// poc and lcu addr
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
 
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
-            int iAddr = cMatchTarget.cap(2).toInt();
+            int iAddr = match.captured(2).toInt();
             pcLCU = pcFrame->getLCUs().at(iAddr);
 
 
             ///
-            QString strIntraDir = cMatchTarget.cap(3);
-            cIntraDirInfoStream.setString( &strIntraDir, QIODevice::ReadOnly );
+            QString strIntraDir = match.captured(3);
+            cIntraDirInfoStream.setString( &strIntraDir, QIODeviceBase::ReadOnly );
             xReadIntraMode(&cIntraDirInfoStream, pcLCU);
 
         }

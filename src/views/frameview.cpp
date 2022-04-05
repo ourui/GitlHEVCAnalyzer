@@ -41,7 +41,7 @@ void FrameView::xOnFrameArrived(GitlUpdateUIEvt& rcEvt)
 void FrameView::wheelEvent ( QWheelEvent * event )
 {
     //AnalyzerMsgSender::getInstance()->msgOut(QString("%1").arg(event->delta()));
-    int iDelta = event->delta();
+    int iDelta = event->angleDelta().y();
     double dIncrement = 0;
     if( iDelta < 0 )
     {
@@ -53,7 +53,7 @@ void FrameView::wheelEvent ( QWheelEvent * event )
     }
 
     double dNextScale = m_dCurrScale + dIncrement;
-    if( dNextScale < 0.1 )
+    if( dNextScale < 0.1 || dNextScale > 10)
     {
         /// scale limit
     }
@@ -69,8 +69,8 @@ void FrameView::wheelEvent ( QWheelEvent * event )
         int iImgX = m_cGraphicsPixmapItem.scenePos().x();
         int iImgY = m_cGraphicsPixmapItem.scenePos().y();
 
-        int iMouseX = mapToScene(event->pos()).x();
-        int iMouseY = mapToScene(event->pos()).y();
+        int iMouseX = mapToScene(event->position().toPoint()).x();
+        int iMouseY = mapToScene(event->position().toPoint()).y();
 
         m_cGraphicsPixmapItem.moveBy((iImgX-iMouseX)*dIncrement/m_dCurrScale,
                                      (iImgY-iMouseY)*dIncrement/m_dCurrScale);

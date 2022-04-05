@@ -1,5 +1,5 @@
 #include "tuparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 
 #define TU_SLIPT_FLAG 99
@@ -15,7 +15,7 @@ bool TUParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     /// <1,1> 1 -3 0 1 -3 0 1 -3 0 1 1 0 1 -3 0
@@ -30,21 +30,22 @@ bool TUParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     {
 
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 )
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() )
         {
             /// poc and lcu addr
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
 
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
-            int iAddr = cMatchTarget.cap(2).toInt();
+            int iAddr = match.captured(2).toInt();
             pcLCU = pcFrame->getLCUs().at(iAddr);
 
 
             ///
-            QString strTUInfo = cMatchTarget.cap(3);
-            cTUInfoStream.setString( &strTUInfo, QIODevice::ReadOnly );
+            QString strTUInfo = match.captured(3);
+            cTUInfoStream.setString( &strTUInfo, QIODeviceBase::ReadOnly );
 
 
             xReadTU(&cTUInfoStream, pcLCU);

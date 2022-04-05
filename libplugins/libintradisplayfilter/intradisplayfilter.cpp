@@ -68,7 +68,7 @@ bool IntraDisplayFilter::drawPU   (FilterContext* pcContext, QPainter* pcPainter
             pcPainter->translate(pcScaledArea->center());
             pcPainter->rotate(dRotation);
             pcPainter->drawLine(cLine);
-            pcPainter->resetMatrix();
+            pcPainter->resetTransform();
         }
         else
         {

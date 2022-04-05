@@ -1,5 +1,5 @@
 #include "decodergeneralparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QDebug>
 
@@ -32,15 +32,16 @@ bool DecoderGeneralParser::parseFile(QTextStream* pcInputStream, ComSequence* pc
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     //HM software: Decoder Version [5.2][Windows][VS 1500][32 bit]
     cMatchTarget.setPattern("HM software: Decoder Version \\[([0-9.]+)\\].*");
     while( !pcInputStream->atEnd() ) {
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-            QString strEncoderVersion = cMatchTarget.cap(1);
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() ) {
+            QString strEncoderVersion = match.captured(1);
             pcSequence->setEncoderVersion(strEncoderVersion);
             break;
         }
@@ -59,19 +60,22 @@ bool DecoderGeneralParser::parseFile(QTextStream* pcInputStream, ComSequence* pc
         while( !pcInputStream->atEnd() )
         {
             strOneLine = pcInputStream->readLine();
-            if(cMatchTarget.indexIn(strOneLine) != -1)
+            auto match = cMatchTarget.match(strOneLine);
+            if(match.hasMatch())
                 break;
         }
-        if( cMatchTarget.indexIn(strOneLine) != -1 ) {
+
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() ) {
             pcFrame = new ComFrame(pcSequence);
 
             /// POC & Decoding time
-            pcFrame->setPOC(cMatchTarget.cap(1).toInt());
-            pcFrame->setTotalDecTime(cMatchTarget.cap(2).toDouble());
+            pcFrame->setPOC(match.captured(1).toInt());
+            pcFrame->setTotalDecTime(match.captured(2).toDouble());
 
             /// L0 L1 LC
             QString strL0, strL1, strLC;
-            strL0 = cMatchTarget.cap(3); strL1 = cMatchTarget.cap(5); strLC = cMatchTarget.cap(7);
+            strL0 = match.captured(3); strL1 = match.captured(5); strLC = match.captured(7);
             readIntArray(&pcFrame->getL0List(), &strL0);
             readIntArray(&pcFrame->getL1List(), &strL1);
             readIntArray(&pcFrame->getLCList(), &strLC);
@@ -92,8 +96,9 @@ bool DecoderGeneralParser::parseFile(QTextStream* pcInputStream, ComSequence* pc
 
             {
                 strOneLine = pcInputStream->readLine();
-                if( cMatchTarget.indexIn(strOneLine) != -1 ) {
-                    pcSequence->setTotalDecTime(cMatchTarget.cap(1).toDouble());
+                auto match = cMatchTarget.match(strOneLine);
+                if( match.hasMatch() ) {
+                    pcSequence->setTotalDecTime(match.captured(1).toDouble());
                     break;
                 }
             }
@@ -127,7 +132,7 @@ void DecoderGeneralParser::xSortByFrameCount( ComSequence* pcSequence )
 
     /// sort each IDRGroup
     for(int i = 0; i < cIDRGroup.size()-1; i++)
-        qSort(cIDRGroup[i], cIDRGroup[i+1], xFrameSortingOrder);
+        std::sort(cIDRGroup[i], cIDRGroup[i+1], xFrameSortingOrder);
 
     /// assign frame num
     for(int i = 0; i < pcSequence->getFramesInDisOrder().size(); i++)

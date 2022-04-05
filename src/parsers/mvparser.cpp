@@ -1,5 +1,5 @@
 #include "mvparser.h"
-#include <QRegExp>
+#include <QRegularExpression>
 
 MVParser::MVParser(QObject *parent) :
     QObject(parent)
@@ -11,7 +11,7 @@ bool MVParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     Q_ASSERT( pcSequence != NULL );
 
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     /// <1,1> 1 -3 0 1 -3 0 1 -3 0 1 1 0 1 -3 0
@@ -26,21 +26,22 @@ bool MVParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     {
 
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 )
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch() )
         {
             /// poc and lcu addr
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
 
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
-            int iAddr = cMatchTarget.cap(2).toInt();
+            int iAddr = match.captured(2).toInt();
             pcLCU = pcFrame->getLCUs().at(iAddr);
 
 
             ///
-            QString strMVInfo = cMatchTarget.cap(3);
-            cMVInfoStream.setString( &strMVInfo, QIODevice::ReadOnly );
+            QString strMVInfo = match.captured(3);
+            cMVInfoStream.setString( &strMVInfo, QIODeviceBase::ReadOnly );
 
 
             xReadMV(&cMVInfoStream, pcLCU);

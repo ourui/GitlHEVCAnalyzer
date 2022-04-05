@@ -1,6 +1,6 @@
 #include "cupuparser.h"
 #include <QTextStream>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QtAlgorithms>
 #include <QDebug>
 #define CU_SLIPT_FLAG 99      ///< CU splitting flag in file
@@ -28,7 +28,7 @@ bool CUPUParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
 
     ////
     QString strOneLine;
-    QRegExp cMatchTarget;
+    QRegularExpression cMatchTarget;
 
 
     /// <1,1> 99 0 0 5 0
@@ -44,15 +44,16 @@ bool CUPUParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
     {
 
         strOneLine = pcInputStream->readLine();
-        if( cMatchTarget.indexIn(strOneLine) != -1 )
+        auto match = cMatchTarget.match(strOneLine);
+        if( match.hasMatch())
         {
 
             /// poc and lcu addr
-            int iPoc = cMatchTarget.cap(1).toInt();
+            int iPoc = match.captured(1).toInt();
             iDecOrder += (iLastPOC != iPoc);
             iLastPOC = iPoc;
             pcFrame = pcSequence->getFramesInDecOrder().at(iDecOrder);
-            int iAddr = cMatchTarget.cap(2).toInt();
+            int iAddr = match.captured(2).toInt();
             pcLCU = new ComCU(pcFrame);
             pcLCU->setAddr(iAddr);
             pcLCU->setFrame(pcFrame);
@@ -65,15 +66,15 @@ bool CUPUParser::parseFile(QTextStream* pcInputStream, ComSequence* pcSequence)
             pcLCU->setY(iPixelY);
 
             /// recursively parse the CU&PU quard-tree structure
-            QString strCUInfo = cMatchTarget.cap(3);
-            cCUInfoStream.setString( &strCUInfo, QIODevice::ReadOnly );
+            QString strCUInfo = match.captured(3);
+            cCUInfoStream.setString( &strCUInfo, QIODeviceBase::ReadOnly );
             if( xReadInCUMode( &cCUInfoStream, pcLCU ) == false )
                 return false;
             pcFrame->getLCUs().push_back(pcLCU);
         }        
 
         /// sort LCU in ascendning order
-        qSort(pcFrame->getLCUs().begin(), pcFrame->getLCUs().end(), xCUSortingOrder);
+        std::sort(pcFrame->getLCUs().begin(), pcFrame->getLCUs().end(), xCUSortingOrder);
 
     }
 
